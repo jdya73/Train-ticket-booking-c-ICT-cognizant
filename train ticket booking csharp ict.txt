@@ -1,0 +1,271 @@
+Passenger.cs
+============
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace TrainTicketBooking  //DO NOT change the namespace name
+{
+	public class Passenger  //DO NOT change the class name
+	{
+		//Implement code here - Properties
+		public int PassengerId { get; set; }
+		public string PassengerName { get; set; }
+		public string SourceLocation { get; set; }
+		public string DestinationLocation { get; set; }
+		public double Distance { get; set; }
+
+		//Default Constructor
+		public Passenger() { }
+
+		//Parameterized Constructor
+		public Passenger(int PassengerId, string PassengerName, string SourceLocation, string DestinationLocation, double Distance)
+		{
+			this.PassengerId = PassengerId;
+			this.PassengerName = PassengerName;
+			this.SourceLocation = SourceLocation;
+			this.DestinationLocation = DestinationLocation;
+			this.Distance = Distance;
+		}
+	}
+}
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Program.cs 
+==========
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Data.SqlClient;
+
+namespace TrainTicketBooking //DO NOT change the namespace name
+{
+	public class Program  //DO NOT change the class name
+	{
+		static void Main(string[] args) //DO NOT change the 'Main' method signature
+		{
+			//Implement code here
+			Console.WriteLine(" 1. Insert the Passenger Details.\n 2. Delete the Passenger Details Based on Passenger Id.\n 3. Calculate the Train fare based on distance\n Select Your Choice: ");
+			int opt = int.Parse(Console.ReadLine());
+
+			//Declare Variables
+			int id;
+			String name, source, destination;
+			double distance;
+
+			switch (opt)
+			{
+				case 1:
+					Console.WriteLine("Enter the Passenger ID :");
+					id = int.Parse(Console.ReadLine());
+					Console.WriteLine("Enter Passenger Name :");
+					name = Console.ReadLine();
+					Console.WriteLine("Enter Source Location :");
+					source = Console.ReadLine();
+					Console.WriteLine("Enter Destination Location :");
+					destination = Console.ReadLine();
+					Console.WriteLine("Enter the Distance:");
+					distance = Double.Parse(Console.ReadLine());
+
+					//Method Calling for Insertion
+					Passenger p1 = new Passenger(id, name, source, destination, distance);
+					PassengerUtility.InsertPassengerDetails(p1);
+					break;
+
+				case 2:
+					Console.WriteLine("Enter the Passenger Id:");
+					id = int.Parse(Console.ReadLine());
+
+					//Method Calling for Deletion
+					bool b = PassengerUtility.DeletePassengerById(id);
+					if (b == true)
+					{
+						Console.WriteLine("Successfully Deleted.");
+					}
+					else
+					{
+						Console.WriteLine("Error in Deletion");
+					}
+					break;
+
+				case 3:
+					Console.WriteLine("Enter the Passenger ID :");
+					id = int.Parse(Console.ReadLine());
+					Console.WriteLine("Enter Passenger Name :");
+					name = Console.ReadLine();
+					Console.WriteLine("Enter Source Location :");
+					source = Console.ReadLine();
+					Console.WriteLine("Enter Destination Location :");
+					destination = Console.ReadLine();
+					Console.WriteLine("Enter the Distance:");
+					distance = double.Parse(Console.ReadLine());
+
+					//Method Calling for Calculate Ticket Fare
+					Passenger p2 = new Passenger(id, name, source, destination, distance);
+					double fare = PassengerUtility.CalculateFare(p2);
+					Console.WriteLine("Ticket fare is " +fare);
+					break;
+                
+				//Default Case
+				default: Console.WriteLine("Wrong Entry");
+                                break;
+			}
+		}
+	}
+}
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+DBConnection
+============
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Data.SqlClient;
+using System.Xml;
+using System.IO;
+using System.Configuration;
+
+namespace TrainTicketBooking //DO NOT change the namespace name
+{
+	public class DBConnection //DO NOT change the class name
+	{
+		//Default Constructor
+		public DBConnection() { }
+
+		//Implement code here
+		public SqlConnection GetConnection()
+                {
+			//SqlConnection conobj = null;
+                        // string constr = ConfigurationManager.ConnectionStrings["SqlCon"].ToString()
+			string constr = ConfigurationManager.ConnectionStrings["SqlCon"].ConnectionString;
+                        SqlConnection conobj = new SqlConnection(constr);
+			return conobj;
+		}
+	}
+}
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+PassengerUtility.cs
+===================
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Data.SqlClient;
+
+namespace TrainTicketBooking  //DO NOT change the namespace name
+{
+	public class PassengerUtility //DO NOT change the class name
+	{
+		//public SqlConnection conobj { get; set; }
+		//public PassengerUtility() { }
+
+		//Implement code here
+
+		public void InsertPassengerDetails(Passenger PassengerObj)
+		{
+			//try{
+			using (SqlConnection conobj = DBConnection.GetConnection())
+			{    
+                            
+				conobj.Open();   //Example : (PassengerObj.PassengerName).ToString() - use for all string type
+				string query = "INSERT INTO Passenger VALUES('" + PassengerObj.PassengerId + "','" + PassengerObj.PassengerName + "','" +PassengerObj.SourceLocation + "','" + PassengerObj.DestinationLocation + "','" + float.Parse(PassengerObj.Distance) + "')";
+				SqlCommand cmd = new SqlCommand(query, conobj);
+				//SqlDataReader i = cmd.ExecuteNonQuery
+				int i = cmd.ExecuteNonQuery();
+				if (i > 0)
+				{
+					Console.WriteLine("Data Inserted.");
+				}
+				else
+				{
+					Console.WriteLine("Error in Inserting Data");
+				}
+				conobj.Close();
+                              // }
+                              // catch(Exception e)
+                              // {
+                              //   Console.WriteLine(e.Message);
+                              // }
+			}
+		}
+
+		public bool DeletePassengerById(int PassengerId)
+		{
+			//try{
+			using (SqlConnection conobj = DBConnection.GetConnection())
+			{  
+
+				conobj.Open();
+				string query = "delete from Passenger where PassengerId=" + PassengerId;
+				SqlCommand cmd = new SqlCommand(query, conobj);
+				int i = cmd.ExecuteNonQuery();
+				if (i > 0)
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+				conobj.Close();
+			}
+                          //}
+                          // catch(Exception e)
+                          // {
+                          //   Console.WriteLine(e.Message);
+                          // }
+
+		}
+
+		public double CalculateFare(Passenger passenger)
+		{
+			if (passenger.Distance <= 300)
+			{
+				return 300;
+			}
+			else if (passenger.Distance <= 500)
+			{
+				return 500;
+			}
+			else if (passenger.Distance <= 1000)
+			{
+				return 1000;
+			}
+			else
+			{
+				return 1500;
+			}
+		}   
+	}
+}
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+App.config
+==========
+
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+    <startup> 
+        <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.6.1" />
+    </startup>
+ <connectionStrings>
+    <add name="SqlCon" connectionString="data source=localhost;initial catalog=dbTraineeHandsOn;integrated security=true;"/>
+  </connectionStrings>
+</configuration>
+	 	  	    	 	      	  	 	
